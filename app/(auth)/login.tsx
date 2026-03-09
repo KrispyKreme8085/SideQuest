@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../supabase/supabase';
+import { Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -14,12 +17,11 @@ export default function LoginScreen() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) Alert.alert('Login Error', error.message);
-    // Navigation handled automatically by AuthContext
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
+      <Image source={require('../../assets/images/SideQuestLogo.png')} style={styles.logo} resizeMode='contain' />
 
       <TextInput
         style={styles.input}
@@ -49,10 +51,11 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#fff' },
+  container: { display: 'flex', flexDirection: "column", justifyContent: 'center', width: width, height: height, alignItems: "center", padding: 24, backgroundColor: '#fff' },
+  logo: { width: 200,},
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 32, textAlign: 'center' },
-  input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12, marginBottom: 16, fontSize: 16 },
-  button: { backgroundColor: '#6366f1', padding: 14, borderRadius: 8, alignItems: 'center', marginBottom: 16 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  link: { textAlign: 'center', color: '#6366f1', fontSize: 14 },
+  input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12, marginBottom: 16, fontSize: 16, width: "100%" },
+  button: { backgroundColor: '#FFB703', padding: 14, borderRadius: 8, alignItems: 'center', marginBottom: 16 },
+  buttonText: { color: '#000', fontSize: 16, fontWeight: '600' },
+  link: { textAlign: 'center', color: '#000', fontSize: 14 },
 });
