@@ -1,22 +1,30 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { supabase } from '../supabase/supabase';
-import { useAuth } from '../context/AuthContext';
+import Header from './components/header';
+import Footer from './components/footer';
+
+const { width, height } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const { session } = useAuth();
-
-  async function handleLogout() {
-    await supabase.auth.signOut();
-  }
+  // const { session } = useAuth();
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: '#fff' }}>
-      <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 12 }}>Home</Text>
-      <Text style={{ fontSize: 14, color: '#666', marginBottom: 32 }}>Logged in as: {session?.user?.email}</Text>
-      <TouchableOpacity style={{ backgroundColor: '#ef4444', padding: 14, borderRadius: 8, width: '100%', alignItems: 'center' }} onPress={handleLogout}>
-        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Log Out</Text>
-      </TouchableOpacity>
+    <View style={styles.page}>
+      <Header></Header>
+      <View>
+
+      </View>
+      <Footer></Footer>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  page: {
+    display: "flex",
+    flexDirection: "column",
+    width: width,
+    height: height
+  }
+})
 
