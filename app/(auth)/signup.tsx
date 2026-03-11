@@ -19,7 +19,6 @@ export default function SignUpScreen() {
     if (error) {
       Alert.alert('Sign Up Error', error.message);
     } else {
-      Alert.alert('Success', 'Check your email to confirm your account!');
       router.replace('/(auth)/login');
     }
   }
