@@ -12,7 +12,7 @@ export default function Footer() {
             <TouchableOpacity onPress={() => router.push('/')}>
                 <Image source={require('../../assets/images/HomePage.png')} style={styles.buttons} resizeMode='contain' />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/#TODO')}>
+            <TouchableOpacity onPress={() => router.push('/(quest)/quest')}>
                 <Image source={require('../../assets/images/SideQuestIcon.png')} style={styles.buttons} resizeMode='contain' />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/(profile)/profile')}>
