@@ -1,7 +1,6 @@
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '../context/AuthContext';
-import { useFonts } from 'expo-font';
 
 function RootLayoutNav() {
   const { session, loading } = useAuth();

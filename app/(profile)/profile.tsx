@@ -15,6 +15,7 @@ export default function Profile() {
     const [lastName, setLastName] = useState('');
     const [profilePicture, setProfilePicture] = useState<string | null>(null);
     const [bannerPicture, setBannerPicture] = useState<string | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         fetchProfile();
@@ -126,7 +127,8 @@ export default function Profile() {
                 });
 
             if (error) throw error;
-            Alert.alert('Success', 'Profile updated!');
+
+            setIsEditing(false);
 
         } catch (error) {
             Alert.alert('Error');
@@ -151,60 +153,102 @@ export default function Profile() {
         );
     }
 
+    if (isEditing) {
+        return (
+            <View style={styles.page}>
+                <Header />
+                <View style={styles.body}>
+                    <TouchableOpacity onPress={handlePickBannerPicture}>
+                        <View style={styles.bannerContainer}>
+                            {bannerPicture
+                                ? <Image source={{ uri: bannerPicture }} style={styles.banner} />
+                                : <View style={styles.bannerPlaceholder} />
+                            }
+                        </View>
+                    </TouchableOpacity>
+
+                    <View style={styles.textContainer}>
+                        <TouchableOpacity onPress={handlePickProfilePicture} style={styles.profilePictureWrapper}>
+                            {profilePicture
+                                ? <Image source={{ uri: profilePicture }} style={styles.profilePicture} />
+                                : <View style={styles.profilePicturePlaceholder} />
+                            }
+                        </TouchableOpacity>
+                        
+                        <View style={styles.inputContainer}>
+                            <Text>First Name</Text>
+                            <TextInput
+                                placeholder="First Name"
+                                value={firstName}
+                                onChangeText={setFirstName}
+                                style={styles.input}
+                            />
+
+                            <Text>Last Name</Text>
+                            <TextInput
+                                placeholder="Last Name"
+                                value={lastName}
+                                onChangeText={setLastName}
+                                style={styles.input}
+                            />
+
+                            <Text>Username</Text>
+                            <TextInput
+                                placeholder="Username"
+                                value={username}
+                                onChangeText={setUsername}
+                                autoCapitalize="none"
+                                style={styles.input}
+                            />
+
+                            <TouchableOpacity onPress={updateProfile} disabled={saving} style={{ padding: 10, backgroundColor: '#A200FF', borderRadius: 5, opacity: saving ? 0.7 : 1 }}>
+                                <Text style={{color: '#fff'}}>{saving ? 'Saving...' : 'Save Profile'}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                </View>
+                <Footer />
+            </View>
+        );
+    }
+
     return (
         <View style={styles.page}>
             <Header />
             <View style={styles.body}>
-                <TouchableOpacity onPress={handlePickBannerPicture}>
-                    <View style={styles.bannerContainer}>
-                        {bannerPicture
-                            ? <Image source={{ uri: bannerPicture }} style={styles.banner} />
-                            : <View style={styles.bannerPlaceholder} />
-                        }
-                    </View>
-                </TouchableOpacity>
+                <View style={styles.bannerContainer}>
+                    {bannerPicture
+                        ? <Image source={{ uri: bannerPicture }} style={styles.banner} />
+                        : <View style={styles.bannerPlaceholder} />
+                    }
+                </View>
 
                 <View style={styles.textContainer}>
-                    <TouchableOpacity onPress={handlePickProfilePicture} style={styles.profilePictureWrapper}>
+                    <View style={styles.profilePictureWrapper}>
                         {profilePicture
                             ? <Image source={{ uri: profilePicture }} style={styles.profilePicture} />
                             : <View style={styles.profilePicturePlaceholder} />
                         }
-                    </TouchableOpacity>
-                    
-                    <View style={styles.inputContainer}>
-                        <Text>First Name</Text>
-                        <TextInput
-                            placeholder="First Name"
-                            value={firstName}
-                            onChangeText={setFirstName}
-                            style={styles.input}
-                        />
+                    </View>
+                    <View style={{marginLeft: 120, marginTop: -5, marginBottom: 30}}>
+                        <Text style={{fontWeight: 'bold', fontSize: 20}}>{firstName} {lastName}</Text>
+                        <View style={{display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between'}}>
+                            <Text>@{username}</Text>
+                            <TouchableOpacity onPress={() => setIsEditing(true)}>
+                                <Text style={{color: "#A200FF"}}>Edit...</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
 
-                        <Text>Last Name</Text>
-                        <TextInput
-                            placeholder="Last Name"
-                            value={lastName}
-                            onChangeText={setLastName}
-                            style={styles.input}
-                        />
+                    <View>
+                        <Text>Your Posts</Text>
+                    </View>
 
-                        <Text>Username</Text>
-                        <TextInput
-                            placeholder="Username"
-                            value={username}
-                            onChangeText={setUsername}
-                            autoCapitalize="none"
-                            style={styles.input}
-                        />
-
-                        <TouchableOpacity onPress={updateProfile} disabled={saving}>
-                            <Text>{saving ? 'Saving...' : 'Save Profile'}</Text>
+                    <View style={[styles.inputContainer, {marginTop: 20}]}>
+                        <TouchableOpacity onPress={handleLogout} style={{ padding: 10, backgroundColor: '#ff0000', borderRadius: 5, opacity: saving ? 0.7 : 1 }}>
+                            <Text style={{color: '#fff'}}>Logout</Text>
                         </TouchableOpacity>
-
-                        {/* <TouchableOpacity onPress={handleLogout}>
-                            <Text>Logout</Text>
-                        </TouchableOpacity> */}
                     </View>
                 </View>
 
@@ -212,6 +256,7 @@ export default function Profile() {
             <Footer />
         </View>
     );
+    
 }
 
 const styles = StyleSheet.create({
@@ -251,7 +296,7 @@ const styles = StyleSheet.create({
         height: 100,
         borderRadius: 100,
         position: 'absolute',
-        top: -50,
+        top: -30,
         borderWidth: 1,
         borderColor: 'black',
     },
@@ -263,6 +308,7 @@ const styles = StyleSheet.create({
     },
     textContainer: {
         width,
+        height,
         backgroundColor: '#fff',
         paddingLeft: 16,
         paddingRight: 16,
@@ -278,6 +324,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
+        gap: 5,
     },
     input: {
         width: '40%',

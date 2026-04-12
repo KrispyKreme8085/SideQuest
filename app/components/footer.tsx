@@ -25,6 +25,7 @@ export default function Footer() {
 const styles = StyleSheet.create({
     footer: {
         width: width, 
+        height: 90,
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-around",
@@ -33,7 +34,8 @@ const styles = StyleSheet.create({
         borderTopWidth: 2, 
         borderTopColor: "#000", 
         padding: 10,
-        paddingBottom: 20
+        paddingBottom: 20,
+        backgroundColor: "#fff",
     },
 
     buttons: {
