@@ -21,7 +21,83 @@ export default function Friend() {
     const [friendsData, setFriendsData] = useState<any[]>([]);
     const [showFriendsModal, setShowFriendsModal] = useState(false);
 
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [myFriends, setMyFriends] = useState<string[]>([]);
+    const [updatingFriend, setUpdatingFriend] = useState(false);
+
     const { friendId } = useLocalSearchParams<{ friendId: string }>();
+
+    useEffect(() => {
+        getCurrentUser();
+    }, []);
+
+    async function getCurrentUser() {
+        const { data } = await supabase.auth.getUser();
+        const userId = data.user?.id;
+        if (!userId) return;
+
+        setCurrentUserId(userId);
+
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('friends')
+            .eq('id', userId)
+            .single();
+
+        if (!error) {
+            setMyFriends(profile?.friends ?? []);
+        }
+    }
+
+    const isFriend = currentUserId
+        ? myFriends.includes(friendId)
+        : false;
+
+    async function toggleFriend() {
+        if (!currentUserId) {
+            Alert.alert('Not logged in');
+            return;
+        }
+
+        setUpdatingFriend(true);
+
+        try {
+            let updated;
+
+            if (isFriend) {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .update({
+                        friends: myFriends.filter(id => id !== friendId),
+                    })
+                    .eq('id', currentUserId)
+                    .select('friends')
+                    .single();
+
+                if (error) throw error;
+                updated = data.friends;
+            } else {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .update({
+                        friends: [...myFriends, friendId],
+                    })
+                    .eq('id', currentUserId)
+                    .select('friends')
+                    .single();
+
+                if (error) throw error;
+                updated = data.friends;
+            }
+
+            setMyFriends(updated ?? []);
+        } catch (error) {
+            console.error(error);
+            Alert.alert('Error updating friend');
+        } finally {
+            setUpdatingFriend(false);
+        }
+    }
 
     useEffect(() => {
         fetchProfile();
@@ -75,21 +151,20 @@ export default function Friend() {
     }, []);
 
     async function fetchPosts() {
-
         const { data, error } = await supabase
-        .from('posts')
-        .select(`
-            id,
-            profile,
-            post,
-            comments,
-            likes,
-            profiles (
-            username,          
-            profile_picture
-            )
-        `)
-        .eq('profile', friendId);
+            .from('posts')
+            .select(`
+                id,
+                profile,
+                post,
+                comments,
+                likes,
+                profiles (
+                    username,          
+                    profile_picture
+                )
+            `)
+            .eq('profile', friendId);
 
         if (error) {
             console.error('Error fetching posts:', error);
@@ -134,13 +209,25 @@ export default function Friend() {
 
                     <View style={{marginLeft: 125, marginTop: -5, marginBottom: 30, marginRight: 16}}>
                         <Text style={{fontWeight: 'bold', fontSize: 20}}>{firstName} {lastName}</Text>
+
                         <View style={{display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between'}}>
                             <Text>@{username}</Text>
+
+                            <TouchableOpacity onPress={toggleFriend} disabled={updatingFriend}>
+                                <Text style={{color: "#A200FF"}}>
+                                    {updatingFriend
+                                        ? '...'
+                                        : isFriend
+                                            ? 'Unadd'
+                                            : 'Add...'}
+                                </Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
 
                     <View>
                         <Text style={{paddingBottom: 10, fontSize: 15, fontWeight: 'bold', width: '100%', textAlign: 'center'}}>{firstName}'s Friends</Text>
+
                         { friends.length > 0 
                         ? 
                         <View style={styles.friendsContainer}>
@@ -152,6 +239,7 @@ export default function Friend() {
                                     />
                                 </View>
                             ))}
+
                             {hasMoreFriends && (
                                 <TouchableOpacity 
                                     style={styles.moreButton}
@@ -168,6 +256,7 @@ export default function Friend() {
 
                     <View style={styles.postsContainer}>
                         <View style={{width: '100%', height: 1, backgroundColor: 'black'}}></View>
+
                         <ScrollView
                             style={{ flex: 1 }}
                             contentContainerStyle={{
@@ -178,6 +267,7 @@ export default function Friend() {
                             }}
                         >
                             <Text style={{fontSize: 15, fontWeight: 'bold', width: '100%', textAlign: 'center'}}>{firstName}'s Posts</Text>
+
                             {
                                 posts.length > 0 ?
                                 posts.map(post => (
@@ -196,8 +286,8 @@ export default function Friend() {
                         </ScrollView>
                     </View>
                 </View>
-
             </View>
+
             <Footer />
 
             <Modal
@@ -209,11 +299,12 @@ export default function Friend() {
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>All Friends ({friendsData.length})</Text>
+
                             <TouchableOpacity onPress={() => setShowFriendsModal(false)}>
                                 <Text style={styles.closeButton}>✕</Text>
                             </TouchableOpacity>
                         </View>
-                        
+
                         <ScrollView style={styles.modalScroll}>
                             <View style={styles.modalFriendsContainer}>
                                 {friendsData.map(friend => (
@@ -237,7 +328,6 @@ export default function Friend() {
             </Modal>
         </View>
     );
-    
 }
 
 const styles = StyleSheet.create({
