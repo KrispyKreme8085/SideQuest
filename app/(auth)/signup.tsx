@@ -9,10 +9,23 @@ const { width, height } = Dimensions.get('window');
 export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [isAccountDetails, setIsAccountDetails] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   async function handleSignUp() {
+    if (!email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({ email, password });
     setLoading(false);
@@ -23,13 +36,44 @@ export default function SignUpScreen() {
     }
   }
 
+  if (isAccountDetails) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Create Account</Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="First Name"
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Last Name"
+          value={lastName}
+          onChangeText={setLastName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
+        />
+
+        <TouchableOpacity style={styles.button} onPress={() => setIsAccountDetails(false)}>
+          <Text style={styles.buttonText}>{loading ? 'Creating account...' : 'Sign Up'}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Create Account</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="Enter Email..."
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -37,14 +81,21 @@ export default function SignUpScreen() {
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder="Enter Password..."
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
+      <TextInput
+        style={styles.input}
+        placeholder="Confirm Password..."
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        secureTextEntry
+      />
 
       <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Creating account...' : 'Sign Up'}</Text>
+        <Text style={styles.buttonText}>{loading ? 'Loading...' : 'Continue'}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push('/(auth)/login')}>

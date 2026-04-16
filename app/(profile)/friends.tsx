@@ -1,30 +1,27 @@
-import { View, StyleSheet, Dimensions, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, Image, ScrollView, Modal } from 'react-native';
+import { View, StyleSheet, Dimensions, Text, TouchableOpacity, Alert, ActivityIndicator, Image, ScrollView, Modal } from 'react-native';
 import Header from '../components/header';
 import Footer from '../components/footer';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/supabase/supabase';
-import * as ImagePicker from 'expo-image-picker';
 import { Post } from '../index';
 import PostView from '../components/post';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
-export default function Profile() {
+export default function Friend() {
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
     const [username, setUsername] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [profilePicture, setProfilePicture] = useState<string | null>(null);
     const [bannerPicture, setBannerPicture] = useState<string | null>(null);
-    const [isEditing, setIsEditing] = useState(false);
     const [posts, setPosts] = useState<Post[]>([]);
     const [friends, setFriends] = useState<string[]>([]);
     const [friendsData, setFriendsData] = useState<any[]>([]);
     const [showFriendsModal, setShowFriendsModal] = useState(false);
 
-    const router = useRouter();
+    const { friendId } = useLocalSearchParams<{ friendId: string }>();
 
     useEffect(() => {
         fetchProfile();
@@ -34,13 +31,10 @@ export default function Profile() {
         try {
             setLoading(true);
 
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
-
             const { data, error } = await supabase
                 .from('profiles')
                 .select('username, first_name, last_name, profile_picture, banner_picture, friends')
-                .eq('id', user.id)
+                .eq('id', friendId)
                 .single();
 
             if (error) throw error;
@@ -82,10 +76,6 @@ export default function Profile() {
 
     async function fetchPosts() {
 
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) return;
-
         const { data, error } = await supabase
         .from('posts')
         .select(`
@@ -99,7 +89,7 @@ export default function Profile() {
             profile_picture
             )
         `)
-        .eq('profile', user.id);
+        .eq('profile', friendId);
 
         if (error) {
             console.error('Error fetching posts:', error);
@@ -108,165 +98,12 @@ export default function Profile() {
         }
     }
 
-    async function pickAndUploadImage(bucket: 'profile-pictures' | 'banner-pictures'): Promise<string | null> {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: 'images',
-            allowsEditing: true,
-            aspect: bucket === 'profile-pictures' ? [1, 1] : [3, 1],
-            quality: 0.8,
-        });
-
-        if (result.canceled) return null;
-
-        const uri = result.assets[0].uri;
-
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return null;
-
-        const response = await fetch(uri);
-        const blob = await response.blob();
-        const arrayBuffer = await new Response(blob).arrayBuffer();
-
-        const fileName = bucket === 'profile-pictures' ? 'profile.jpg' : 'banner.jpg';
-        const filePath = `${user.id}/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-            .from(bucket)
-            .upload(filePath, arrayBuffer, {
-                contentType: 'image/jpeg',
-                upsert: true,
-            });
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-            .from(bucket)
-            .getPublicUrl(filePath);
-
-        return `${publicUrl}?t=${Date.now()}`;
-    }
-
-    async function handlePickProfilePicture() {
-        try {
-            const url = await pickAndUploadImage('profile-pictures');
-            if (url) setProfilePicture(url);
-        } catch (error) {
-            Alert.alert('Error', 'Failed to upload profile picture');
-        }
-    }
-
-    async function handlePickBannerPicture() {
-        try {
-            const url = await pickAndUploadImage('banner-pictures');
-            if (url) setBannerPicture(url);
-        } catch (error) {
-            Alert.alert('Error', 'Failed to upload banner picture');
-        }
-    }
-
-    async function updateProfile() {
-        try {
-            setSaving(true);
-
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
-
-            const { error } = await supabase
-                .from('profiles')
-                .upsert({
-                    id: user.id,
-                    username,
-                    first_name: firstName,
-                    last_name: lastName,
-                    profile_picture: profilePicture,
-                    banner_picture: bannerPicture,
-                    updated_at: new Date().toISOString(),
-                });
-
-            if (error) throw error;
-
-            setIsEditing(false);
-
-        } catch (error) {
-            Alert.alert('Error');
-        } finally {
-            setSaving(false);
-        }
-    }
-
-    async function handleLogout() {
-        await supabase.auth.signOut();
-    }
-
     if (loading) {
         return (
             <View style={styles.page}>
                 <Header />
                 <View>
                     <ActivityIndicator size="large" />
-                </View>
-                <Footer />
-            </View>
-        );
-    }
-
-    if (isEditing) {
-        return (
-            <View style={styles.page}>
-                <Header />
-                <View style={styles.body}>
-                    <TouchableOpacity onPress={handlePickBannerPicture}>
-                        <View style={styles.bannerContainer}>
-                            {bannerPicture
-                                ? <Image source={{ uri: bannerPicture }} style={styles.banner} />
-                                : <View style={styles.bannerPlaceholder} />
-                            }
-                        </View>
-                    </TouchableOpacity>
-
-                    <View style={styles.textContainer}>
-                        <TouchableOpacity onPress={handlePickProfilePicture} style={styles.profilePictureWrapper}>
-                            {profilePicture
-                                ? <Image source={{ uri: profilePicture }} style={styles.profilePicture} />
-                                : <View style={styles.profilePicturePlaceholder} />
-                            }
-                        </TouchableOpacity>
-                        
-                        <View style={styles.inputContainer}>
-                            <Text>First Name</Text>
-                            <TextInput
-                                placeholder="First Name"
-                                value={firstName}
-                                onChangeText={setFirstName}
-                                style={styles.input}
-                            />
-
-                            <Text>Last Name</Text>
-                            <TextInput
-                                placeholder="Last Name"
-                                value={lastName}
-                                onChangeText={setLastName}
-                                style={styles.input}
-                            />
-
-                            <Text>Username</Text>
-                            <TextInput
-                                placeholder="Username"
-                                value={username}
-                                onChangeText={setUsername}
-                                autoCapitalize="none"
-                                style={styles.input}
-                            />
-
-                            <TouchableOpacity onPress={updateProfile} disabled={saving} style={{ padding: 10, backgroundColor: '#A200FF', borderRadius: 5, opacity: saving ? 0.7 : 1, width: '30%' }}>
-                                <Text style={{color: '#fff', textAlign: 'center'}}>{saving ? 'Saving...' : 'Save Profile'}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleLogout} style={{ padding: 10, backgroundColor: '#ff0000', borderRadius: 5, opacity: saving ? 0.7 : 1, width: '30%' }}>
-                                <Text style={{color: '#fff', textAlign: 'center'}}>Logout</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
                 </View>
                 <Footer />
             </View>
@@ -299,32 +136,21 @@ export default function Profile() {
                         <Text style={{fontWeight: 'bold', fontSize: 20}}>{firstName} {lastName}</Text>
                         <View style={{display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between'}}>
                             <Text>@{username}</Text>
-                            <TouchableOpacity onPress={() => setIsEditing(true)}>
-                                <Text style={{color: "#A200FF"}}>Edit...</Text>
-                            </TouchableOpacity>
                         </View>
                     </View>
 
                     <View>
-                        <Text style={{paddingBottom: 10, fontSize: 15, fontWeight: 'bold', width: '100%', textAlign: 'center'}}>Your Friends</Text>
+                        <Text style={{paddingBottom: 10, fontSize: 15, fontWeight: 'bold', width: '100%', textAlign: 'center'}}>{firstName}'s Friends</Text>
                         { friends.length > 0 
                         ? 
                         <View style={styles.friendsContainer}>
                             {displayedFriends.map(friend => (
-                                <TouchableOpacity key={friend.id}
-                                    onPress={() =>
-                                        router.push({
-                                        pathname: '/(profile)/friends',
-                                        params: { friendId: friend.id },
-                                    })
-                                }>
-                                    <View style={styles.friendItem}>
-                                        <Image 
-                                            source={{ uri: friend.profile_picture }} 
-                                            style={styles.friendProfilePicture} 
-                                        />
-                                    </View>
-                                </TouchableOpacity>
+                                <View key={friend.id} style={styles.friendItem}>
+                                    <Image 
+                                        source={{ uri: friend.profile_picture }} 
+                                        style={styles.friendProfilePicture} 
+                                    />
+                                </View>
                             ))}
                             {hasMoreFriends && (
                                 <TouchableOpacity 
@@ -336,7 +162,7 @@ export default function Profile() {
                             )}
                         </View>
                         :
-                        <Text style={{textAlign: 'center', margin: 10}}>You have no friends yet.</Text>
+                        <Text style={{textAlign: 'center', margin: 10}}>{firstName} has no friends yet.</Text>
                         }
                     </View>
 
@@ -351,7 +177,7 @@ export default function Profile() {
                                 flexGrow: 1,
                             }}
                         >
-                            <Text style={{fontSize: 15, fontWeight: 'bold', width: '100%', textAlign: 'center'}}>Your Posts</Text>
+                            <Text style={{fontSize: 15, fontWeight: 'bold', width: '100%', textAlign: 'center'}}>{firstName}'s Posts</Text>
                             {
                                 posts.length > 0 ?
                                 posts.map(post => (
@@ -365,7 +191,7 @@ export default function Profile() {
                                     />
                                 ))
                                 :
-                                <Text style={{textAlign: 'center', margin: 10}}>You have no posts yet.</Text>
+                                <Text style={{textAlign: 'center', margin: 10}}>{firstName} has no posts yet.</Text>
                             }
                         </ScrollView>
                     </View>
@@ -391,16 +217,7 @@ export default function Profile() {
                         <ScrollView style={styles.modalScroll}>
                             <View style={styles.modalFriendsContainer}>
                                 {friendsData.map(friend => (
-                                    <TouchableOpacity 
-                                        key={friend.id} 
-                                        style={styles.modalFriendItem}
-                                        onPress={() => {
-                                            router.push({
-                                                pathname: '/(profile)/friends',
-                                                params: { friendId: friend.id },
-                                            })
-                                        }}
-                                    >
+                                    <View key={friend.id} style={styles.modalFriendItem}>
                                         <Image 
                                             source={{ uri: friend.profile_picture }} 
                                             style={styles.modalFriendProfilePicture} 
@@ -411,7 +228,7 @@ export default function Profile() {
                                             </Text>
                                             <Text style={styles.modalFriendUsername}>@{friend.username}</Text>
                                         </View>
-                                    </TouchableOpacity>
+                                    </View>
                                 ))}
                             </View>
                         </ScrollView>

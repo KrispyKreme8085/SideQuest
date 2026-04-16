@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, Dimensions, TextInput, ScrollView, Image, Touch
 import { useEffect, useState } from 'react';
 import { Comment } from '../index';
 import { supabase } from '@/supabase/supabase';
+import { useRouter } from 'expo-router';
 
 interface Props {
     comments: Comment[];
@@ -19,6 +20,8 @@ const { width, height } = Dimensions.get('window');
 
 export default function CommentCard(props: Props) {
     const [commentsWithUsernames, setCommentsWithUsernames] = useState<CommentWithUsername[]>([]);
+
+    const router = useRouter();
 
     useEffect(() => {
         const fetchUsernames = async () => {
@@ -62,10 +65,15 @@ export default function CommentCard(props: Props) {
             >
                 {commentsWithUsernames.map((comment, index) => (
                     <View key={index} style={styles.comment}>
-                        <View style={styles.commentHeader}>
+                        <TouchableOpacity style={styles.commentHeader} onPress={() => {
+                            router.push({
+                                pathname: '/(profile)/friends',
+                                params: { friendId: comment.profile },
+                            })
+                        }}>
                             <Image source={{ uri: comment.profile_picture }} style={styles.img} />
                             <Text style={{ fontWeight: 'bold' }}>{comment.username}</Text>
-                        </View>
+                        </TouchableOpacity>
                         <Text>{comment.comment}</Text>
                     </View>
                 ))}

@@ -6,6 +6,7 @@ import { useState, useEffect, use } from 'react';
 import { supabase } from '@/supabase/supabase';
 import CommentCard from './commentCard';
 import { Comment } from '../index';
+import { useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,6 +25,8 @@ export default function PostView(props: Props) {
     const [showComments, setShowComments] = useState(false);
     const [profileId, setProfileId] = useState<string | null>(null);
     const [comment, setComment] = useState('');
+
+    const router = useRouter();
 
     useEffect(() => {
         getUserAndCheckLike();
@@ -174,10 +177,15 @@ export default function PostView(props: Props) {
 
     return (
         <View style={styles.post}>
-            <View style={styles.profileContainer}>
+            <TouchableOpacity style={styles.profileContainer} onPress={() => {
+                router.push({
+                    pathname: '/(profile)/friends',
+                    params: { friendId: props.post.profile },
+            })
+            }}>
                 <Image source={{ uri: props.profilePicture }} style={styles.profilePicture} />
                 <Text style={styles.username}>{props.username}</Text>
-            </View>
+            </TouchableOpacity>
             <Text style={styles.quest}>{props.post.post.quest}</Text>
             <Image source={{ uri: props.post.post.post_picture }} style={styles.image} />
             <View style={styles.buttons}>
