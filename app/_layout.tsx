@@ -1,5 +1,6 @@
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
+import { View } from 'react-native';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
 function RootLayoutNav() {
@@ -19,7 +20,11 @@ function RootLayoutNav() {
     }
   }, [session, loading]);
 
-  return <Slot />;
+  return (
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      <Slot />
+    </View>
+  );
 }
 
 export default function RootLayout() {
