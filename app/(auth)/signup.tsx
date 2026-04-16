@@ -108,6 +108,9 @@ export default function SignUpScreen() {
         <TouchableOpacity style={styles.button} onPress={completeSignUp} disabled={loading}>
           <Text style={styles.buttonText}>{loading ? 'Creating account...' : 'Sign Up'}</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.button2} onPress={() => setIsAccountDetails(false)} disabled={loading}>
+          <Text style={styles.buttonText}>Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -158,7 +161,9 @@ const styles = StyleSheet.create({
   logo: { width: 200,},
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 32, textAlign: 'center' },
   input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12, marginBottom: 16, fontSize: 16, width: "100%" },
-  button: { backgroundColor: '#FFB703', padding: 14, borderRadius: 8, alignItems: 'center', marginBottom: 16 },
+  button: { backgroundColor: '#FFB703', padding: 14, borderRadius: 8, alignItems: 'center', marginBottom: 16, width: 150 },
   buttonText: { color: '#000', fontSize: 16, fontWeight: '600' },
   link: { textAlign: 'center', color: '#000', fontSize: 14 },
+  button2: { borderWidth: 2, borderColor: 'black', padding: 14, borderRadius: 8, alignItems: 'center', marginBottom: 16, width: 150 },
+  // buttonText: { color: '#000', fontSize: 16, fontWeight: '600' },
 });

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/supabase/supabase';
 import { Post } from '../index';
 import PostView from '../components/post';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,6 +26,7 @@ export default function Friend() {
     const [updatingFriend, setUpdatingFriend] = useState(false);
 
     const { friendId } = useLocalSearchParams<{ friendId: string }>();
+    const router = useRouter();
 
     useEffect(() => {
         getCurrentUser();
@@ -35,6 +36,11 @@ export default function Friend() {
         const { data } = await supabase.auth.getUser();
         const userId = data.user?.id;
         if (!userId) return;
+
+        if (userId === friendId) {
+            router.replace('/profile');
+            return;
+        }
 
         setCurrentUserId(userId);
 
