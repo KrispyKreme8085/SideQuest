@@ -2,7 +2,7 @@
 
 import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, Modal, Alert } from 'react-native';
 import { Post } from '../index';
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/supabase/supabase';
 import CommentCard from './commentCard';
 import { Comment } from '../index';

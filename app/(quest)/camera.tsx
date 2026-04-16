@@ -90,10 +90,7 @@ export default function Camera() {
                 .from('posts')
                 .insert({
                     profile: user.id,
-                    post: {
-                        post_picture: publicUrl,
-                        quest: profile.daily_quest
-                    }
+                    post: { post_picture: publicUrl, quest: profile.daily_quest }
                 })
                 .select('id')
                 .single();
@@ -123,43 +120,43 @@ export default function Camera() {
         <View style={styles.page}>
             <Header />
 
-            {/* CAMERA WRAPPER (LANDSCAPE FORCED) */}
+            {/* CAMERA AREA */}
             <View style={styles.cameraContainer}>
-                <View style={styles.cameraFrame}>
-                    <CameraView
-                        style={styles.camera}
-                        ref={ref => setCamera(ref)}
-                        facing={facing}
-                    />
+                <CameraView
+                    style={styles.camera}
+                    ref={ref => setCamera(ref)}
+                    facing={facing}
+                />
 
-                    {/* TOP CONTROLS */}
-                    <View style={styles.topControls}>
-                        <TouchableOpacity
-                            style={styles.flipButton}
-                            onPress={() =>
-                                setFacing(prev => (prev === 'back' ? 'front' : 'back'))
-                            }
-                        >
-                            <Ionicons name="camera-reverse" size={26} color="white" />
-                        </TouchableOpacity>
-                    </View>
+                {/* TOP OVERLAY CONTROLS */}
+                <View style={styles.topControls}>
+                    <TouchableOpacity
+                        style={styles.flipButton}
+                        onPress={() =>
+                            setFacing(prev => (prev === 'back' ? 'front' : 'back'))
+                        }
+                    >
+                        <Ionicons name="camera-reverse" size={26} color="white" />
+                    </TouchableOpacity>
+                </View>
 
-                    {/* BOTTOM CONTROLS */}
-                    <View style={styles.controls}>
-                        <TouchableOpacity
-                            style={styles.shutterButton}
-                            onPress={captureImage}
-                            disabled={uploading}
-                        >
-                            {uploading ? (
-                                <ActivityIndicator color="white" />
-                            ) : (
-                                <View style={styles.shutterInner} />
-                            )}
-                        </TouchableOpacity>
+                {/* BOTTOM CONTROLS */}
+                <View style={styles.controls}>
+                    <TouchableOpacity
+                        style={styles.shutterButton}
+                        onPress={captureImage}
+                        disabled={uploading}
+                    >
+                        {uploading ? (
+                            <ActivityIndicator color="white" />
+                        ) : (
+                            <View style={styles.shutterInner} />
+                        )}
+                    </TouchableOpacity>
 
-                        <Text style={styles.hintText}>Tap to capture</Text>
-                    </View>
+                    <Text style={styles.hintText}>
+                        Tap to capture
+                    </Text>
                 </View>
             </View>
 
@@ -176,30 +173,19 @@ const styles = StyleSheet.create({
 
     cameraContainer: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-    },
-
-    /* THIS IS THE KEY */
-    cameraFrame: {
-        width: height - 90 - 120,   // WIDE SHORT FRAME (landscape feel)
-        height: width,              // flipped dimensions
-        transform: [{ rotate: '90deg' }],
-        overflow: 'hidden',
-        borderRadius: 18,
-        backgroundColor: 'black',
+        justifyContent: 'space-between',
     },
 
     camera: {
-        flex: 1,
+        position: 'absolute',
+        width,
+        height: height - 90 - 120, // footer + header approximation
     },
 
     topControls: {
         position: 'absolute',
-        top: 15,
+        top: 10,
         right: 15,
-        transform: [{ rotate: '-90deg' }], // undo rotation for UI
     },
 
     flipButton: {
@@ -213,10 +199,10 @@ const styles = StyleSheet.create({
 
     controls: {
         position: 'absolute',
-        bottom: 20,
-        alignItems: 'center',
+        bottom: 110, // keeps above footer (90px)
         width: '100%',
-        transform: [{ rotate: '-90deg' }], // keep UI upright
+        alignItems: 'center',
+        gap: 10,
     },
 
     shutterButton: {
@@ -241,7 +227,6 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 12,
         opacity: 0.7,
-        marginTop: 10,
     },
 
     permissionBody: {

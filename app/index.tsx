@@ -40,6 +40,47 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchPosts();
+
+    const channel = supabase
+      .channel('posts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'posts'
+        },
+        async (payload) => {          
+          const { data: updatedPost, error } = await supabase
+            .from('posts')
+            .select(`
+              id,
+              profile,
+              post,
+              comments,
+              likes,
+              profiles (
+                username,          
+                profile_picture
+              )
+            `)
+            .eq('id', payload.new.id)
+            .single();
+
+          if (!error && updatedPost) {
+            setPosts(prevPosts => 
+              prevPosts.map(post => 
+                post.id === updatedPost.id ? updatedPost as any : post
+              )
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   async function fetchPosts() {
@@ -96,4 +137,3 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   }
 })
-
