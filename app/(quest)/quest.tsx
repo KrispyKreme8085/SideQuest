@@ -79,7 +79,7 @@ export default function Quest() {
             <View style={styles.page}>
                 <Header></Header>
                 <View style={styles.body}>
-                    <Text style={[styles.text1, {fontFamily: 'Inter', padding: 30, textAlign: 'center'}]}>You've already completed your quest for today!</Text>
+                    <Text style={[styles.text1, {fontFamily: 'Inter', padding: 30, textAlign: 'center'}]}>You&apos;ve already completed your quest for today!</Text>
                 </View>
                 <Footer></Footer>
             </View>
