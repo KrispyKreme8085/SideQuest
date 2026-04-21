@@ -1,8 +1,8 @@
 {
-  "expo": {
+ "expo": {
     "name": "SideQuest",
     "slug": "SideQuest",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sidequest",
@@ -10,7 +10,12 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "edu.fhnw.sidequest"
+      "bundleIdentifier": "edu.fhnw.sidequest",
+      // Change this line - point to the 1024x1024 PNG file, not the folder
+      "icon": "./assets/apple-devices/AppIcon.appiconset/icon-ios-1024x1024.png",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -45,6 +50,14 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "SUPABASE_URL": "https://mhayeieeeyukqfnkabkj.supabase.co",
+      "PUBLISHABLE_KEY": "sb_publishable_EqVVuv6GwPmEGhgYwQB6yw_L11dhcGp",
+      "router": {},
+      "eas": {
+        "projectId": "ad630a67-bd8e-4602-893c-a1bbeb06ce10"
+      }
     }
   }
 }

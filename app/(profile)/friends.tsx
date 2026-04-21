@@ -232,7 +232,7 @@ export default function Friend() {
                     </View>
 
                     <View>
-                        <Text style={{paddingBottom: 10, fontSize: 15, fontWeight: 'bold', width: '100%', textAlign: 'center'}}>{firstName}'s Friends</Text>
+                        <Text style={{paddingBottom: 10, fontSize: 15, fontWeight: 'bold', width: '100%', textAlign: 'center'}}>{firstName}&apos;s Friends</Text>
 
                         { friends.length > 0 
                         ? 
@@ -272,7 +272,7 @@ export default function Friend() {
                                 flexGrow: 1,
                             }}
                         >
-                            <Text style={{fontSize: 15, fontWeight: 'bold', width: '100%', textAlign: 'center'}}>{firstName}'s Posts</Text>
+                            <Text style={{fontSize: 15, fontWeight: 'bold', width: '100%', textAlign: 'center'}}>{firstName}&apos;s Posts</Text>
 
                             {
                                 posts.length > 0 ?
